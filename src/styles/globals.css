@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold: #D4AF37;
+  --gold-soft: #C6A55A;
+  --bg: #070707;
+  --surface: #101010;
+  --surface2: #161616;
+  --muted: #71717A;
+  --border: #1F1F1F;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: #070707;
+  color: #ffffff;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #101010; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+
+/* Date picker overrides */
+.rdp { --rdp-accent-color: #D4AF37; --rdp-background-color: rgba(212,175,55,0.1); }
+.rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+  background-color: #D4AF37 !important;
+  color: #000 !important;
+}
