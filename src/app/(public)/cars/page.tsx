@@ -6,7 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
 
-const BRANDS = ["All", "Rolls-Royce", "Ferrari", "Lamborghini", "Bentley", "McLaren", "Mercedes"];
+const BRANDS = ["All", "Mercedes"];
 const TRANSMISSIONS = ["All", "Automatic", "Manual"];
 
 export default function CarsPage() {

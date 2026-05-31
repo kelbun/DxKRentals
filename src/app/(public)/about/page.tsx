@@ -45,8 +45,8 @@ export default function AboutPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { value: "50+", label: "Premium Vehicles" },
-                { value: "2,400+", label: "Happy Customers" },
+                { value: "5+", label: "Premium Vehicles" },
+                { value: "Many", label: "Happy Customers" },
                 { value: "4.9★", label: "Average Rating" },
                 { value: "24/7", label: "Customer Support" },
               ].map(({ value, label }) => (

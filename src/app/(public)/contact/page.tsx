@@ -57,7 +57,7 @@ export default function ContactPage() {
 
               <div className="space-y-5 mb-10">
                 {[
-                  { icon: <Phone size={18} />, label: "Phone", value: "+44 7000 000000", href: "tel:+447000000000" },
+                  { icon: <Phone size={18} />, label: "Phone", value: "+44 7401 102238", href: "tel:+447000000000" },
                   { icon: <Mail size={18} />, label: "Email", value: "hello@dxkrentals.com", href: "mailto:hello@dxkrentals.com" },
                   { icon: <MapPin size={18} />, label: "Location", value: "United Kingdom", href: null },
                   { icon: <Clock size={18} />, label: "Hours", value: "Mon–Sun, 8am – 10pm", href: null },
