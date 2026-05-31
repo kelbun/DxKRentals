@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Badge from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
-import { CheckCircle, XCircle, Eye, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Loader2, Ban } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -28,6 +28,7 @@ export default function BookingsAdminPage() {
   const [selected, setSelected] = useState<Booking | null>(null);
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState("");
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const supabase = createClient();
 
   const fetchBookings = async () => {
@@ -43,6 +44,23 @@ export default function BookingsAdminPage() {
 
   useEffect(() => { fetchBookings(); }, []);
 
+  const sendEmail = async (type: string) => {
+    if (!selected) return;
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type,
+        customerEmail: selected.user?.email,
+        customerName: selected.user?.full_name,
+        carName: selected.car?.name,
+        startDate: selected.start_date,
+        endDate: selected.end_date,
+        total: selected.total_price,
+      }),
+    });
+  };
+
   const updateStatus = async (id: string, status: string) => {
     setUpdating(true);
     setUpdateError("");
@@ -53,31 +71,18 @@ export default function BookingsAdminPage() {
       .eq("id", id);
 
     if (error) {
-      console.error("Update error:", error);
       setUpdateError(`Failed: ${error.message}`);
       setUpdating(false);
       return;
     }
 
-    // Send email notification to customer
-    if (selected && (status === "approved" || status === "rejected")) {
-      await fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: status === "approved" ? "booking_approved" : "booking_rejected",
-          customerEmail: selected.user?.email,
-          customerName: selected.user?.full_name,
-          carName: selected.car?.name,
-          startDate: selected.start_date,
-          endDate: selected.end_date,
-          total: selected.total_price,
-        }),
-      });
-    }
+    if (status === "approved") await sendEmail("booking_approved");
+    if (status === "rejected") await sendEmail("booking_rejected");
+    if (status === "cancelled") await sendEmail("booking_cancelled");
 
     await fetchBookings();
     setSelected((prev) => prev ? { ...prev, status } : null);
+    setShowCancelConfirm(false);
     setUpdating(false);
   };
 
@@ -91,6 +96,9 @@ export default function BookingsAdminPage() {
       ? bookings.length
       : bookings.filter((b) => b.status === s).length;
   });
+
+  const canCancel = selected &&
+    ["pending", "approved"].includes(selected.status);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
@@ -139,6 +147,7 @@ export default function BookingsAdminPage() {
                   key={b.id}
                   onClick={() => {
                     setUpdateError("");
+                    setShowCancelConfirm(false);
                     setSelected(selected?.id === b.id ? null : b);
                   }}
                   className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all border ${
@@ -176,10 +185,10 @@ export default function BookingsAdminPage() {
         <div className="bg-[#161616] border border-[rgba(212,175,55,0.15)] rounded-2xl p-6">
           {selected ? (
             <div>
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start mb-5">
                 <h3 className="text-white font-bold text-base">Booking Details</h3>
                 <button
-                  onClick={() => { setSelected(null); setUpdateError(""); }}
+                  onClick={() => { setSelected(null); setUpdateError(""); setShowCancelConfirm(false); }}
                   className="text-[#71717A] hover:text-white text-xs"
                 >Close</button>
               </div>
@@ -200,7 +209,7 @@ export default function BookingsAdminPage() {
                 <div className="bg-[#101010] rounded-xl p-4">
                   <p className="text-[#71717A] text-xs uppercase tracking-wider mb-2">Rental Period</p>
                   <p className="text-white text-sm">{formatDate(selected.start_date)}</p>
-                  <p className="text-[#71717A] text-xs my-1">to</p>
+                  <p className="text-[#71717A] text-xs my-0.5">to</p>
                   <p className="text-white text-sm">{formatDate(selected.end_date)}</p>
                 </div>
 
@@ -219,34 +228,33 @@ export default function BookingsAdminPage() {
                 )}
 
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-[#71717A] text-xs">Current Status</span>
+                  <span className="text-[#71717A] text-xs">Status</span>
                   <Badge status={selected.status as any} />
                 </div>
 
-                {/* Error message */}
                 {updateError && (
                   <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-xs">
                     {updateError}
                   </div>
                 )}
 
-                {/* Action buttons */}
+                {/* Approve / Reject */}
                 {selected.status === "pending" && (
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-1">
                     <button
                       onClick={() => updateStatus(selected.id, "approved")}
                       disabled={updating}
-                      className="flex-1 flex items-center justify-center gap-2 bg-green-500/10 text-green-400 border border-green-500/30 py-3 rounded-xl text-sm font-semibold hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-green-500/10 text-green-400 border border-green-500/30 py-3 rounded-xl text-sm font-semibold hover:bg-green-500/20 disabled:opacity-50"
                     >
-                      {updating ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                      {updating ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />}
                       Approve
                     </button>
                     <button
                       onClick={() => updateStatus(selected.id, "rejected")}
                       disabled={updating}
-                      className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 text-red-400 border border-red-500/30 py-3 rounded-xl text-sm font-semibold hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-red-500/10 text-red-400 border border-red-500/30 py-3 rounded-xl text-sm font-semibold hover:bg-red-500/20 disabled:opacity-50"
                     >
-                      {updating ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                      {updating ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
                       Reject
                     </button>
                   </div>
@@ -258,7 +266,7 @@ export default function BookingsAdminPage() {
                     disabled={updating}
                     className="w-full flex items-center justify-center gap-2 bg-blue-500/10 text-blue-400 border border-blue-500/30 py-3 rounded-xl text-sm font-semibold hover:bg-blue-500/20 disabled:opacity-50"
                   >
-                    {updating && <Loader2 size={14} className="animate-spin" />}
+                    {updating && <Loader2 size={13} className="animate-spin" />}
                     Mark as Active
                   </button>
                 )}
@@ -269,18 +277,50 @@ export default function BookingsAdminPage() {
                     disabled={updating}
                     className="w-full flex items-center justify-center gap-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 py-3 rounded-xl text-sm font-semibold hover:bg-indigo-500/20 disabled:opacity-50"
                   >
-                    {updating && <Loader2 size={14} className="animate-spin" />}
+                    {updating && <Loader2 size={13} className="animate-spin" />}
                     Mark as Completed
                   </button>
+                )}
+
+                {/* Cancel button */}
+                {canCancel && !showCancelConfirm && (
+                  <button
+                    onClick={() => setShowCancelConfirm(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-orange-500/10 text-orange-400 border border-orange-500/30 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-500/20 mt-1"
+                  >
+                    <Ban size={13} /> Cancel Booking
+                  </button>
+                )}
+
+                {/* Cancel confirmation */}
+                {showCancelConfirm && (
+                  <div className="bg-orange-500/8 border border-orange-500/25 rounded-xl p-4">
+                    <p className="text-orange-400 font-semibold text-sm mb-1">Cancel this booking?</p>
+                    <p className="text-[#71717A] text-xs mb-4 leading-relaxed">
+                      The customer will receive a cancellation email. If a deposit was paid, issue the refund manually via Stripe dashboard.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowCancelConfirm(false)}
+                        className="flex-1 bg-[#101010] text-[#71717A] border border-[#1F1F1F] py-2 rounded-lg text-xs"
+                      >Keep</button>
+                      <button
+                        onClick={() => updateStatus(selected.id, "cancelled")}
+                        disabled={updating}
+                        className="flex-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 py-2 rounded-lg text-xs font-semibold hover:bg-orange-500/30 disabled:opacity-50 flex items-center justify-center gap-1"
+                      >
+                        {updating && <Loader2 size={11} className="animate-spin" />}
+                        Confirm Cancel
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
           ) : (
             <div className="text-center py-12">
               <Eye size={24} className="text-[#71717A] mx-auto mb-3" />
-              <p className="text-[#71717A] text-sm">
-                Click a booking to view details and take action
-              </p>
+              <p className="text-[#71717A] text-sm">Click a booking to view details and take action</p>
             </div>
           )}
         </div>
