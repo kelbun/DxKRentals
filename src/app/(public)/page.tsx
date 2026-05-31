@@ -55,10 +55,10 @@ export default async function HomePage() {
                 </Link>
               </div>
               <div className="flex gap-10 mt-14 pt-8 border-t border-border">
-                {[["50+", "Vehicles"], ["2,400+", "Bookings"], ["4.9★", "Rating"]].map(([v, l]) => (
+                {[["Premium", "Fleet"], ["Flexible", "Bookings"], ["5★", "Service"]].map(([v, l]) => (
                   <div key={l}>
-                    <div className="text-gold font-serif font-extrabold text-xl">{v}</div>
-                    <div className="text-muted text-xs mt-1 tracking-widest uppercase">{l}</div>
+                    <div className="text-[#D4AF37] font-serif font-extrabold text-xl">{v}</div>
+                    <div className="text-[#71717A] text-xs mt-1 tracking-widest uppercase">{l}</div>
                   </div>
                 ))}
               </div>
@@ -138,7 +138,7 @@ export default async function HomePage() {
                   Reserve Now
                 </Link>
                 <a
-                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "447000000000"}`}
                   className="flex items-center gap-2 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/30 text-sm font-semibold px-7 py-3.5 rounded-full hover:bg-[#25D366]/20 transition-colors"
                 >
                   <span>💬</span> WhatsApp Us
