@@ -537,10 +537,7 @@ export default function FleetAdminPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-      {/* Block Dates Modal */}
+          {/* Block Dates Modal */}
       {blockModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#111] border border-[rgba(212,175,55,0.2)] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -549,59 +546,75 @@ export default function FleetAdminPage() {
                 <h2 className="text-white font-serif font-bold text-lg">Block Dates</h2>
                 <p className="text-[#71717A] text-xs mt-0.5">{blockModal.carName}</p>
               </div>
-              <button onClick={() => setBlockModal(null)} className="text-[#71717A] hover:text-white"><X size={20} /></button>
+              <button onClick={() => setBlockModal(null)} className="text-[#71717A] hover:text-white">
+                <X size={20} />
+              </button>
             </div>
+
             <div className="p-6 space-y-4">
               <p className="text-[#71717A] text-xs leading-relaxed">
-                Block dates to prevent customers from booking this vehicle during specific periods — e.g. maintenance, personal use, or holidays.
+                Block dates to prevent customers from booking this vehicle during specific periods.
               </p>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-[#71717A] uppercase tracking-wider block mb-1.5">Start Date</label>
-                  <input type="date" value={blockStart} onChange={e => setBlockStart(e.target.value)}
+                  <label className="text-xs text-[#71717A] uppercase tracking-wider block mb-1.5">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={blockStart}
+                    onChange={(e) => setBlockStart(e.target.value)}
                     min={new Date().toISOString().split("T")[0]}
-                    className="w-full bg-[#0D0D0D] border border-[rgba(212,175,55,0.2)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+                    className="w-full bg-[#0D0D0D] border border-[rgba(212,175,55,0.2)] rounded-xl px-3 py-2.5 text-white text-sm"
+                  />
                 </div>
-                <div>
-                  <label className="text-xs text-[#71717A] uppercase tracking-wider block mb-1.5">End Date</label>
-                  <input type="date" value={blockEnd} onChange={e => setBlockEnd(e.target.value)}
-                    min={blockStart || new Date().toISOString().split("T")[0]}
-                    className="w-full bg-[#0D0D0D] border border-[rgba(212,175,55,0.2)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs text-[#71717A] uppercase tracking-wider block mb-1.5">Reason (optional)</label>
-                <input type="text" value={blockReason} onChange={e => setBlockReason(e.target.value)}
-                  placeholder="e.g. Maintenance, Personal use..."
-                  className="w-full bg-[#0D0D0D] border border-[rgba(212,175,55,0.2)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
-              </div>
-              {blockError && <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-xs">{blockError}</div>}
-              <button onClick={handleBlock} disabled={blocking}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#D4AF37] to-[#C6A55A] text-black font-bold py-3 rounded-xl text-sm hover:opacity-90 disabled:opacity-60">
-                {blocking ? "Blocking..." : "Block These Dates"}
-              </button>
 
-              {/* Existing blocks */}
-              {blockedDates.length > 0 && (
-                <div className="pt-2 border-t border-[#1F1F1F]">
-                  <p className="text-[#71717A] text-xs uppercase tracking-wider mb-3">Currently Blocked</p>
-                  <div className="space-y-2">
-                    {blockedDates.map((b) => (
-                      <div key={b.id} className="flex items-center justify-between bg-[#101010] border border-[#1F1F1F] rounded-xl px-4 py-3">
-                        <div>
-                          <p className="text-white text-xs font-semibold">{b.start_date} → {b.end_date}</p>
-                          {b.reason && <p className="text-[#71717A] text-xs mt-0.5">{b.reason}</p>}
-                        </div>
-                        <button onClick={() => handleUnblock(b.id)}
-                          className="text-red-400 hover:text-red-300 text-xs font-semibold ml-4 bg-red-500/10 px-3 py-1 rounded-lg hover:bg-red-500/20 transition-colors">
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                <div>
+                  <label className="text-xs text-[#71717A] uppercase tracking-wider block mb-1.5">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={blockEnd}
+                    onChange={(e) => setBlockEnd(e.target.value)}
+                    min={blockStart || new Date().toISOString().split("T")[0]}
+                    className="w-full bg-[#0D0D0D] border border-[rgba(212,175,55,0.2)] rounded-xl px-3 py-2.5 text-white text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[#71717A] uppercase tracking-wider block mb-1.5">
+                  Reason (optional)
+                </label>
+                <input
+                  type="text"
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                  placeholder="e.g. Maintenance"
+                  className="w-full bg-[#0D0D0D] border border-[rgba(212,175,55,0.2)] rounded-xl px-3 py-2.5 text-white text-sm"
+                />
+              </div>
+
+              {blockError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-xs">
+                  {blockError}
                 </div>
               )}
+
+              <button
+                onClick={handleBlock}
+                disabled={blocking}
+                className="w-full bg-gradient-to-r from-[#D4AF37] to-[#C6A55A] text-black font-bold py-3 rounded-xl"
+              >
+                {blocking ? "Blocking..." : "Block These Dates"}
+              </button>
             </div>
           </div>
         </div>
       )}
+
+    </div>
+  );
+}
