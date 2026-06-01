@@ -17,6 +17,7 @@ export default async function DashboardLayout({
     { href: "/dashboard/cars", label: "Fleet" },
     { href: "/dashboard/revenue", label: "Analytics" },
     { href: "/dashboard/calendar", label: "Calendar" },
+    { href: "/dashboard/documents", label: "Documents" },
   ];
 
   const customerLinks = [
