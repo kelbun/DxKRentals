@@ -9,16 +9,16 @@ const COMING_SOON_MODE = true;
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Never intercept these — static files, API, auth pages
-  const skip = [
+  // Always skip these — no middleware interference
+  const alwaysSkip = [
     "/_next",
     "/favicon",
     "/api/",
+    "/coming-soon",
     "/login",
     "/signup",
-    "/coming-soon",
   ];
-  if (skip.some((s) => pathname.startsWith(s))) {
+  if (alwaysSkip.some((s) => pathname.startsWith(s))) {
     return NextResponse.next();
   }
 
@@ -33,14 +33,13 @@ export async function middleware(request: NextRequest) {
     const { data } = await supabase.auth.getSession();
     session = data.session;
   } catch {
-    // If session fetch fails, just continue
     return response;
   }
 
   // ── COMING SOON MODE ──────────────────────────────
-  if (COMING_SOON_MODE && pathname !== "/coming-soon") {
+  if (COMING_SOON_MODE) {
+    // Check if admin — admins get full access
     if (session) {
-      // Check if admin — admins bypass coming soon
       try {
         const { data: user } = await supabase
           .from("users")
@@ -49,30 +48,23 @@ export async function middleware(request: NextRequest) {
           .single();
 
         if (user?.role === "admin") {
-          // Admin — apply normal dashboard protection only
-          if (pathname.startsWith("/dashboard") && !session) {
-            return NextResponse.redirect(new URL("/login", request.url));
-          }
+          // Admin bypasses coming soon entirely
+          // Still protect /dashboard from logged-out users
           return response;
         }
       } catch {
-        // Can't check role — send to coming soon
+        // Role check failed — treat as non-admin
       }
     }
 
-    // Not admin or not logged in — redirect to coming soon
+    // Non-admin or not logged in — send to coming soon
+    // (coming soon page itself is in alwaysSkip so no loop)
     return NextResponse.redirect(new URL("/coming-soon", request.url));
   }
 
-  // ── NORMAL MODE (coming soon off) ─────────────────
-  // Protect dashboard — must be logged in
+  // ── NORMAL MODE (coming soon is off) ──────────────
   if (pathname.startsWith("/dashboard") && !session) {
     return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Don't let logged-in users go to login/signup
-  if ((pathname === "/login" || pathname === "/signup") && session) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return response;
